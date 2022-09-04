@@ -6,22 +6,19 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/rabbitmq/amqp091-go"
+	"github.com/yogasab/golang-rabbitmq-basics/broker"
 )
 
 func main() {
-	// Create connection to RabbitMQ
-	conn, err := amqp091.Dial("amqp://guest:guest@localhost:5672")
+	conn, ch, err := broker.RabbitMQ()
 	if err != nil {
-		panic(errors.Wrap(err, "Failed to connect RabbitMQ"))
+		panic(err)
 	}
-	defer conn.Close()
 
-	// Create channel to send data
-	ch, err := conn.Channel()
-	if err != nil {
-		panic(errors.Wrap(err, "Failed to get channel"))
-	}
-	defer ch.Close()
+	defer func() {
+		ch.Close()
+		conn.Close()
+	}()
 
 	// Declare Queue to reserve the data we send
 	queue, err := ch.QueueDeclare("hello", false, false, false, false, nil)
